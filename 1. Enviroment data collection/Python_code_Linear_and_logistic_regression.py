@@ -1,9 +1,8 @@
 """
-Projektni zadatak iz kolegija "Raspoznavanje uzoraka i strojno ucenje".
-Cilj projekta je pomocu Arduino razvojnog sustava napraviti dataset koji pomocu
-senzora mjeri stanje prostorije (temperatura, CO2, vlaga, svjetlina) te 
-u Python programskom okruzenju napraviti obradu, vizualizaciju i 
-predikcijski model pomocu linearne i logisticke regresije.
+The purpose of the project was to collect the enviromental data from
+my room with Arduino and the adequate sensors then write the data into
+a csv file. The data was visualized with matpllotlib. Used the sklearn
+library for applying two learning methods: linear and logistic regression.
 """
 #Koristene biblioteke
 import pandas as pd
@@ -114,9 +113,11 @@ regr.fit(X_train, y_train)
 
 #Plotanje rezultata dobiveni pomocu linearne regresije
 plt.figure(figsize=(10,10))
-plt.plot(X_test, regr.predict(X_test), color='blue', linewidth=2)
-plt.scatter(X_test, y_test, color='orange')
-
+plt.plot(X_test, regr.predict(X_test), color='blue', linewidth=2, label='Predikcija',hold='on')
+plt.scatter(X_test, y_test, color='orange',label='Podaci za treniranje',alpha=.5)
+plt.legend(loc=2)
+plt.xlabel('Vlaga')
+plt.ylabel('CO2')
 plt.title("Linearna regresija (CO2 i Vlaga)")
 plt.xticks(())
 plt.yticks(())
@@ -159,8 +160,15 @@ print ("Usporedba pravih i predvidjenih vrijednosti")
 print ('True:',y_test[:23].reshape(1,23))
 print ('Pred:',y_predikcija[:23])
 
+plt.figure()
+plt.scatter(X_test,y_test, alpha=.6, hold="on",label="Test")
+plt.scatter(X_test,y_predikcija, alpha=.4, color='orange',marker='^',label="Predicted")
+plt.legend(loc=6)
+plt.title("Testni i predvidjeni podaci")
+plt.show()
+
 vjerojatnosti = lr.predict_proba(X_test)
-print ()
+
 labels = ['Nije prisutan', 'Prisutan']
 cm = metrics.confusion_matrix(y_test, y_predikcija)
 fig = plt.figure()
@@ -179,6 +187,8 @@ plt.ylabel('True')
 plt.show()
 
 print ("Tocnost klasifikacije: {} %".format(metrics.accuracy_score(y_test, y_predikcija)*100))
+
+
 
 #--------------------------------------Temperatura/CO2-----------------------------------
 
@@ -203,6 +213,13 @@ print ("Usporedba pravih i predvidjenih vrijednosti")
 print ('True:',y_test[:23].reshape(1,23))
 print ('Pred:',y_predikcija[:23])
 
+plt.figure()
+plt.scatter(X_test,y_test, alpha=.6, hold="on",label="Test")
+plt.scatter(X_test,y_predikcija, alpha=.4, color='orange',marker='^',label="Predicted")
+plt.legend(loc=6)
+plt.title("Testni i predvidjeni podaci")
+plt.show()
+
 vjerojatnosti = lr.predict_proba(X_test)
 labels = ['Nije prisutan', 'Prisutan']
 cm = metrics.confusion_matrix(y_test, y_predikcija)
@@ -213,7 +230,7 @@ ax.set_xticklabels([''] + labels)
 ax.set_yticklabels([''] + labels,rotation='vertical')
 for i in range (len(cm)):
     for j in range (len(cm)):
-        ax.annotate(str(cm[j][i]), xy = (i,j),fontsize=25)
+        ax.annotate(str(cm[j][i]), xy=(i,j),fontsize=25)
 
 plt.colorbar(cax)
 plt.title("Konfuzijska matrica (Temperatura|Prisutnost)")
@@ -222,6 +239,11 @@ plt.ylabel('True')
 plt.show()
 
 print ("Tocnost klasifikacije: {} %".format(metrics.accuracy_score(y_test, y_predikcija)*100))
+
+
+#------------------------------------------------------------------------------
+
+
 
 
 
