@@ -1,8 +1,9 @@
 """
-The purpose of the project was to collect the enviromental data from
-my room with Arduino and the adequate sensors then write the data into
-a csv file. The data was visualized with matpllotlib. Used the sklearn
-library for applying two learning methods: linear and logistic regression.
+Projektni zadatak iz kolegija "Raspoznavanje uzoraka i strojno ucenje".
+Cilj projekta je pomocu Arduino razvojnog sustava napraviti dataset koji pomocu
+senzora mjeri stanje prostorije (temperatura, CO2, vlaga, svjetlina) te 
+u Python programskom okruzenju napraviti obradu, vizualizaciju i 
+predikcijski model pomocu linearne i logisticke regresije.
 """
 #Koristene biblioteke
 import pandas as pd
@@ -22,7 +23,7 @@ print ('Skup podataka se sastoji od {} elemenata\n'.format(len(df)))
 
 
 #Statisticki pregled podataka
-print df.describe()
+print df.describe().transpose()
 print('\n')
 #Standardna devijacija podataka (prosjecno odstupanje od prosjeka i to u apsolutnom iznosu)
 print ("Standardna devijacija podataka:")
@@ -113,7 +114,7 @@ regr.fit(X_train, y_train)
 
 #Plotanje rezultata dobiveni pomocu linearne regresije
 plt.figure(figsize=(10,10))
-plt.plot(X_test, regr.predict(X_test), color='blue', linewidth=2, label='Predikcija',hold='on')
+plt.plot(X_test, regr.predict(X_test), color='blue', linewidth=2, label='Predikcija',hold='on',alpha=.75)
 plt.scatter(X_test, y_test, color='orange',label='Podaci za treniranje',alpha=.5)
 plt.legend(loc=2)
 plt.xlabel('Vlaga')
@@ -124,46 +125,62 @@ plt.yticks(())
 plt.show()
 
 #Ispis podataka modela
-print('Koeficijenti: {}'.format(regr.coef_))
-print('Kvadratna pogreska: {}'.format(np.mean((regr.predict(X_test)-y_test)**2)))
-print('Varijanca: {}'.format(regr.score(X_test, y_test)))
+#Estimirani koeficijenti dobiveni na temelju podataka
+print "------------------------------------------------------------------------------\n"
+b1 = regr.coef_[0]
+print("Model po kojem se pravac estimirao: y= {} + {}x".format(regr.intercept_[0],b1[0]))
+#Odstupanje od estimiranog pravca na testnim podacima
+print('Srednja kvadratna pogreska: {}'.format(metrics.mean_squared_error(y_test,regr.predict(X_test))))
+#Koliko su podaci dobro fitani za dan model
+print('Varijanca: {}\n'.format(regr.score(X_test, y_test)))
 
 
 #-----------------------------Logisticka Regresija-----------------------------
-print("-------------------------------LOGISTICKA REGRESIJA----------------------------")
+print("-------------------------------LOGISTICKA REGRESIJA----------------------------\n")
 #Primjena modela za ucenje
-lr = linear_model.LogisticRegression()
+#L1 - smanjenje overfitanja modela (regularizacija), C - inverz regularizacijske snage 
+#veca vrijednost C-a, veci prostor rješenja
+lr = linear_model.LogisticRegression(penalty='l1',C=100,tol=0.0001)
+#from sklearn import metrics
 
 #Podjela podataka na treniranje i testiranje pri cemu je X = co2, a Y = prisutnost
 #Omjer podjele je treniranje:testiranje=7:3
 (X_train, X_test, y_train, y_test) = cv.train_test_split(co2, prisutnost, test_size=.3, random_state=0)
-print("------------------------------CO2/PRISUTNOST---------------------------------------")
+print("----------------------------------CO2/PRISUTNOST-------------------------------\n")
 print ('Distribucija po klasama testnog skupa:')
 print y_test.value_counts()
+#Prisutnost izrazena u postocima
 print ("Postotak jedinica (prisutan): {:2f}%".format(y_test.mean()*100))
-print ("Postotak nula (nije prisutan): {:2f}%".format(100-y_test.mean()*100))
+print ("Postotak nula (nije prisutan): {:2f}%\n".format(100-y_test.mean()*100))
+#Oblikovanje ulaznog i izlaznog skupa za treniranje s kojima naredba fit moze radit
+
 X_train = X_train.reshape((len(X_train),1))
 y_train = y_train.reshape((len(y_train),1)).ravel()
 lr.fit(X_train, y_train)
-print ('Preciznost na podacima za treniranje: {:2f} %'.format(lr.score(X_train,y_train)*100))
+print ('Varijanca: {:2f} %'.format(lr.score(X_train,y_train)*100))
 
-
+#sorted(X_test, key=int)
+#sorted(y_test, key=int)
 X_test = X_test.reshape(len(X_test),1)
 y_test = y_test.reshape(len(y_test),1)
 y_predikcija = lr.predict(X_test)
 
-print ('Preciznost na izlaznim predikcijskim i testnim podacima: {:2f} %'
-.format(metrics.accuracy_score(y_test,y_predikcija)*100))
-
 #Ispis prvih 25 vrijednosti True i Predictet klasa
 print ("Usporedba pravih i predvidjenih vrijednosti")
-print ('True:',y_test[:23].reshape(1,23))
-print ('Pred:',y_predikcija[:23])
+print ('True:{}'.format(y_test[:23].reshape(1,23)))
+print ('Pred:[{}]'.format(y_predikcija[:23]))
 
+#Iscrtavanje podataka pomocu scatter plot-a
 plt.figure()
 plt.scatter(X_test,y_test, alpha=.6, hold="on",label="Test")
 plt.scatter(X_test,y_predikcija, alpha=.4, color='orange',marker='^',label="Predicted")
 plt.legend(loc=6)
+
+#def model(x):
+#    return 1 / (1 + np.exp(-x))
+#model(X_test)
+#plt.plot(y_test, model(X_test), color='blue', linewidth=2)
+
 plt.title("Testni i predvidjeni podaci")
 plt.show()
 
@@ -198,20 +215,19 @@ print("------------------------------TEMPERATURA/PRISUTNOST---------------------
 X_train = X_train.reshape((len(X_train),1))
 y_train = y_train.reshape((len(y_train),1)).ravel()
 lr.fit(X_train, y_train)
-print ('Preciznost na podacima za treniranje: {:2f} %'.format(lr.score(X_train,y_train)*100))
-
 
 X_test = X_test.reshape(len(X_test),1)
 y_test = y_test.reshape(len(y_test),1)
 y_predikcija = lr.predict(X_test)
 
-print ('Preciznost na izlaznim predikcijskim i testnim podacima: {:2f} %'
+print ('Varijanca: {:2f} %'
 .format(metrics.accuracy_score(y_test,y_predikcija)*100))
 
 #Ispis prvih 25 vrijednosti True i Predictet klasa
 print ("Usporedba pravih i predvidjenih vrijednosti")
-print ('True:',y_test[:23].reshape(1,23))
-print ('Pred:',y_predikcija[:23])
+print ('True:{}'.format(y_test[:23].reshape(1,23)))
+print ('Pred:[{}]'.format(y_predikcija[:23]))
+
 
 plt.figure()
 plt.scatter(X_test,y_test, alpha=.6, hold="on",label="Test")
