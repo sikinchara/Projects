@@ -1,9 +1,9 @@
 """
-Projektni zadatak iz kolegija "Raspoznavanje uzoraka i strojno ucenje".
-Cilj projekta je pomocu Arduino razvojnog sustava napraviti dataset koji pomocu
-senzora mjeri stanje prostorije (temperatura, CO2, vlaga, svjetlina) te 
-u Python programskom okruzenju napraviti obradu, vizualizaciju i 
-predikcijski model pomocu linearne i logisticke regresije.
+Project - class: "Pattern recognistion and machine learning"
+The main purpose of this project was to make my own dataset by
+measuring the physical parameters from my room, make a appropriate
+analysis and data visualisation then apply some science! (logistic
+and linear regression onda the built dataframe)
 """
 #Koristene biblioteke
 import pandas as pd
